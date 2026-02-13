@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS clientes;
 
 CREATE TABLE clientes (
-                          id SERIAL PRIMARY KEY,
+                          id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
                           nombre VARCHAR(100) NOT NULL,
                           apellido VARCHAR(100) NOT NULL,
                           razon_social VARCHAR(150) NOT NULL,
@@ -9,8 +9,8 @@ CREATE TABLE clientes (
                           fecha_nacimiento DATE NOT NULL,
                           telefono_celular VARCHAR(30) NOT NULL,
                           email VARCHAR(150) NOT NULL UNIQUE,
-                          fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                          fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                          fecha_creacion TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                          fecha_modificacion TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE OR REPLACE FUNCTION set_fecha_modificacion()
