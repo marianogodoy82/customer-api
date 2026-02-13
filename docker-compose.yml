@@ -1,0 +1,62 @@
+# docker-compose.yml
+services:
+  db:
+    image: postgres:16
+    container_name: yappa-db
+    environment:
+      POSTGRES_DB: yappa
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - yappa_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d yappa"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+#  api:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    container_name: yappa-api
+#    depends_on:
+#      db:
+#        condition: service_healthy
+#    environment:
+#      # Spring datasource
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/yappa
+#      SPRING_DATASOURCE_USERNAME: postgres
+#      SPRING_DATASOURCE_PASSWORD: postgres
+#
+#      # Opcional: activar Flyway explícito
+#      SPRING_FLYWAY_ENABLED: "true"
+#
+#      # Opcional: logs
+#      LOGGING_LEVEL_ROOT: INFO
+#      LOGGING_LEVEL_COM_YAPPA_CLIENTES: INFO
+#
+#      # Si tu app usa server.port fijo, podés omitirlo
+#      SERVER_PORT: "3000"
+#    ports:
+#      - "3000:3000"
+#    restart: unless-stopped
+#
+#  pgadmin:
+#    image: dpage/pgadmin4:8
+#    container_name: yappa-pgadmin
+#    depends_on:
+#      db:
+#        condition: service_healthy
+#    environment:
+#      PGADMIN_DEFAULT_EMAIL: admin@example.com
+#      PGADMIN_DEFAULT_PASSWORD: admin
+#    ports:
+#      - "5050:80"
+#    profiles: ["tools"]
+#    restart: unless-stopped
+
+volumes:
+  yappa_db_data:
