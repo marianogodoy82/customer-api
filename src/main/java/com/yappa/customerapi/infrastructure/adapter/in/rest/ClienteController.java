@@ -2,7 +2,11 @@ package com.yappa.customerapi.infrastructure.adapter.in.rest;
 
 import java.util.List;
 
-import com.yappa.customerapi.domain.port.in.ClienteService;
+import com.yappa.customerapi.domain.port.in.ActualizarClienteUseCase;
+import com.yappa.customerapi.domain.port.in.BuscarClienteUseCase;
+import com.yappa.customerapi.domain.port.in.CrearClienteUseCase;
+import com.yappa.customerapi.domain.port.in.EliminarClienteUseCase;
+import com.yappa.customerapi.domain.port.in.ObtenerClienteUseCase;
 import com.yappa.customerapi.infrastructure.adapter.in.rest.dto.ClienteCreateRequest;
 import com.yappa.customerapi.infrastructure.adapter.in.rest.dto.ClienteResponse;
 import com.yappa.customerapi.infrastructure.adapter.in.rest.dto.ClienteUpdateRequest;
@@ -16,32 +20,45 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/clientes")
 public class ClienteController {
 
-    private final ClienteService clienteService;
+    private final ObtenerClienteUseCase obtenerCliente;
+    private final BuscarClienteUseCase buscarCliente;
+    private final CrearClienteUseCase crearCliente;
+    private final ActualizarClienteUseCase actualizarCliente;
+    private final EliminarClienteUseCase eliminarCliente;
     private final ClienteRestMapper mapper;
 
-    public ClienteController(ClienteService clienteService, ClienteRestMapper mapper) {
-        this.clienteService = clienteService;
+    public ClienteController(ObtenerClienteUseCase obtenerCliente,
+                             BuscarClienteUseCase buscarCliente,
+                             CrearClienteUseCase crearCliente,
+                             ActualizarClienteUseCase actualizarCliente,
+                             EliminarClienteUseCase eliminarCliente,
+                             ClienteRestMapper mapper) {
+        this.obtenerCliente = obtenerCliente;
+        this.buscarCliente = buscarCliente;
+        this.crearCliente = crearCliente;
+        this.actualizarCliente = actualizarCliente;
+        this.eliminarCliente = eliminarCliente;
         this.mapper = mapper;
     }
 
     @GetMapping
     public List<ClienteResponse> getAll() {
-        return clienteService.getAll().stream().map(mapper::toResponse).toList();
+        return obtenerCliente.getAll().stream().map(mapper::toResponse).toList();
     }
 
     @GetMapping("/{id}")
     public ClienteResponse getById(@PathVariable Long id) {
-        return mapper.toResponse(clienteService.getById(id));
+        return mapper.toResponse(obtenerCliente.getById(id));
     }
 
     @GetMapping("/search")
     public List<ClienteResponse> search(@RequestParam String q) {
-        return clienteService.searchByNombre(q).stream().map(mapper::toResponse).toList();
+        return buscarCliente.searchByNombre(q).stream().map(mapper::toResponse).toList();
     }
 
     @PostMapping
     public ResponseEntity<ClienteResponse> create(@Valid @RequestBody ClienteCreateRequest req) {
-        var created = clienteService.create(mapper.toDomain(req));
+        var created = crearCliente.create(mapper.toDomain(req));
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toResponse(created));
     }
 
@@ -50,12 +67,12 @@ public class ClienteController {
         if (req.isEmpty()) {
             throw new IllegalArgumentException("Debe enviar al menos un campo para actualizar");
         }
-        return mapper.toResponse(clienteService.update(id, mapper.toDomain(req)));
+        return mapper.toResponse(actualizarCliente.update(id, mapper.toDomain(req)));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
-        clienteService.delete(id);
+        eliminarCliente.delete(id);
     }
 }

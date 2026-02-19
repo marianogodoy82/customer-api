@@ -1,6 +1,9 @@
 package com.yappa.customerapi.infrastructure.adapter.out.persistence.mapper;
 
 import com.yappa.customerapi.domain.model.Cliente;
+import com.yappa.customerapi.domain.model.Cuit;
+import com.yappa.customerapi.domain.model.Email;
+import com.yappa.customerapi.domain.model.Telefono;
 import com.yappa.customerapi.infrastructure.adapter.out.persistence.entity.ClienteEntity;
 import org.springframework.stereotype.Component;
 
@@ -8,15 +11,15 @@ import org.springframework.stereotype.Component;
 public class ClientePersistenceMapper {
 
     public Cliente toDomain(ClienteEntity entity) {
-        return new Cliente(
+        return Cliente.reconstituir(
                 entity.getId(),
                 entity.getNombre(),
                 entity.getApellido(),
                 entity.getRazonSocial(),
-                entity.getCuit(),
+                new Cuit(entity.getCuit()),
                 entity.getFechaNacimiento(),
-                entity.getTelefonoCelular(),
-                entity.getEmail(),
+                new Telefono(entity.getTelefonoCelular()),
+                new Email(entity.getEmail()),
                 entity.getFechaCreacion(),
                 entity.getFechaModificacion()
         );
@@ -28,10 +31,10 @@ public class ClientePersistenceMapper {
         entity.setNombre(domain.getNombre());
         entity.setApellido(domain.getApellido());
         entity.setRazonSocial(domain.getRazonSocial());
-        entity.setCuit(domain.getCuit());
+        entity.setCuit(domain.getCuit().value());
         entity.setFechaNacimiento(domain.getFechaNacimiento());
-        entity.setTelefonoCelular(domain.getTelefonoCelular());
-        entity.setEmail(domain.getEmail());
+        entity.setTelefonoCelular(domain.getTelefonoCelular().value());
+        entity.setEmail(domain.getEmail().value());
         return entity;
     }
 }

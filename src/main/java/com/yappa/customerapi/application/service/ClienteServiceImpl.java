@@ -4,18 +4,18 @@ import java.util.List;
 
 import com.yappa.customerapi.domain.exception.ClienteNotFoundException;
 import com.yappa.customerapi.domain.model.Cliente;
-import com.yappa.customerapi.domain.port.in.ClienteService;
+import com.yappa.customerapi.domain.port.in.ActualizarClienteUseCase;
+import com.yappa.customerapi.domain.port.in.BuscarClienteUseCase;
+import com.yappa.customerapi.domain.port.in.CrearClienteUseCase;
+import com.yappa.customerapi.domain.port.in.EliminarClienteUseCase;
+import com.yappa.customerapi.domain.port.in.ObtenerClienteUseCase;
 import com.yappa.customerapi.domain.port.out.ClienteRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class ClienteServiceImpl implements ClienteService {
-
-    private static final Logger log = LoggerFactory.getLogger(ClienteServiceImpl.class);
+public class ClienteServiceImpl implements ObtenerClienteUseCase, BuscarClienteUseCase,
+        CrearClienteUseCase, ActualizarClienteUseCase, EliminarClienteUseCase {
 
     private final ClienteRepository clienteRepository;
 
@@ -42,12 +42,7 @@ public class ClienteServiceImpl implements ClienteService {
     @Override
     @Transactional
     public Cliente create(Cliente cliente) {
-        try {
-            return clienteRepository.save(cliente);
-        } catch (DataIntegrityViolationException e) {
-            log.warn("Create conflict", e);
-            throw e;
-        }
+        return clienteRepository.save(cliente);
     }
 
     @Override
@@ -56,17 +51,12 @@ public class ClienteServiceImpl implements ClienteService {
         Cliente existing = clienteRepository.findById(id)
                 .orElseThrow(() -> new ClienteNotFoundException("Cliente no encontrado"));
 
-        if (updateData.getNombre() != null) existing.setNombre(updateData.getNombre());
-        if (updateData.getApellido() != null) existing.setApellido(updateData.getApellido());
-        if (updateData.getTelefonoCelular() != null) existing.setTelefonoCelular(updateData.getTelefonoCelular());
-        if (updateData.getEmail() != null) existing.setEmail(updateData.getEmail());
+        if (updateData.getNombre() != null) existing.actualizarNombre(updateData.getNombre());
+        if (updateData.getApellido() != null) existing.actualizarApellido(updateData.getApellido());
+        if (updateData.getTelefonoCelular() != null) existing.actualizarTelefono(updateData.getTelefonoCelular());
+        if (updateData.getEmail() != null) existing.actualizarEmail(updateData.getEmail());
 
-        try {
-            return clienteRepository.save(existing);
-        } catch (DataIntegrityViolationException e) {
-            log.warn("Update conflict", e);
-            throw e;
-        }
+        return clienteRepository.save(existing);
     }
 
     @Override

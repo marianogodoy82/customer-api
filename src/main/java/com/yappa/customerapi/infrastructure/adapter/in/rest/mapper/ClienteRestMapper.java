@@ -1,6 +1,9 @@
 package com.yappa.customerapi.infrastructure.adapter.in.rest.mapper;
 
 import com.yappa.customerapi.domain.model.Cliente;
+import com.yappa.customerapi.domain.model.Cuit;
+import com.yappa.customerapi.domain.model.Email;
+import com.yappa.customerapi.domain.model.Telefono;
 import com.yappa.customerapi.infrastructure.adapter.in.rest.dto.ClienteCreateRequest;
 import com.yappa.customerapi.infrastructure.adapter.in.rest.dto.ClienteResponse;
 import com.yappa.customerapi.infrastructure.adapter.in.rest.dto.ClienteUpdateRequest;
@@ -10,24 +13,30 @@ import org.springframework.stereotype.Component;
 public class ClienteRestMapper {
 
     public Cliente toDomain(ClienteCreateRequest req) {
-        Cliente c = new Cliente();
-        c.setNombre(req.nombre());
-        c.setApellido(req.apellido());
-        c.setRazonSocial(req.razonSocial());
-        c.setCuit(req.cuit());
-        c.setFechaNacimiento(req.fechaNacimiento());
-        c.setTelefonoCelular(req.telefonoCelular());
-        c.setEmail(req.email());
-        return c;
+        return Cliente.crear(
+                req.nombre(),
+                req.apellido(),
+                req.razonSocial(),
+                new Cuit(req.cuit()),
+                req.fechaNacimiento(),
+                new Telefono(req.telefonoCelular()),
+                new Email(req.email())
+        );
     }
 
     public Cliente toDomain(ClienteUpdateRequest req) {
-        Cliente c = new Cliente();
-        c.setNombre(req.nombre());
-        c.setApellido(req.apellido());
-        c.setTelefonoCelular(req.telefonoCelular());
-        c.setEmail(req.email());
-        return c;
+        return Cliente.reconstituir(
+                null,
+                req.nombre(),
+                req.apellido(),
+                null,
+                null,
+                null,
+                req.telefonoCelular() != null ? new Telefono(req.telefonoCelular()) : null,
+                req.email() != null ? new Email(req.email()) : null,
+                null,
+                null
+        );
     }
 
     public ClienteResponse toResponse(Cliente c) {
@@ -36,10 +45,10 @@ public class ClienteRestMapper {
                 c.getNombre(),
                 c.getApellido(),
                 c.getRazonSocial(),
-                c.getCuit(),
+                c.getCuit().value(),
                 c.getFechaNacimiento(),
-                c.getTelefonoCelular(),
-                c.getEmail(),
+                c.getTelefonoCelular().value(),
+                c.getEmail().value(),
                 c.getFechaCreacion(),
                 c.getFechaModificacion()
         );

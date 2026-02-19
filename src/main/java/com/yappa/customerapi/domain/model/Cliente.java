@@ -9,57 +9,94 @@ public class Cliente {
     private String nombre;
     private String apellido;
     private String razonSocial;
-    private String cuit;
+    private Cuit cuit;
     private LocalDate fechaNacimiento;
-    private String telefonoCelular;
-    private String email;
+    private Telefono telefonoCelular;
+    private Email email;
     private OffsetDateTime fechaCreacion;
     private OffsetDateTime fechaModificacion;
 
-    public Cliente() {}
+    private Cliente() {}
 
-    public Cliente(Long id, String nombre, String apellido, String razonSocial, String cuit,
-                   LocalDate fechaNacimiento, String telefonoCelular, String email,
-                   OffsetDateTime fechaCreacion, OffsetDateTime fechaModificacion) {
-        this.id = id;
-        this.nombre = nombre;
-        this.apellido = apellido;
-        this.razonSocial = razonSocial;
-        this.cuit = cuit;
-        this.fechaNacimiento = fechaNacimiento;
-        this.telefonoCelular = telefonoCelular;
-        this.email = email;
-        this.fechaCreacion = fechaCreacion;
-        this.fechaModificacion = fechaModificacion;
+    public static Cliente crear(String nombre, String apellido, String razonSocial,
+                                Cuit cuit, LocalDate fechaNacimiento,
+                                Telefono telefonoCelular, Email email) {
+        validarNoBlank(nombre, "nombre");
+        validarNoBlank(apellido, "apellido");
+        validarNoBlank(razonSocial, "razón social");
+        if (fechaNacimiento == null) {
+            throw new IllegalArgumentException("La fecha de nacimiento es obligatoria");
+        }
+
+        Cliente cliente = new Cliente();
+        cliente.nombre = nombre;
+        cliente.apellido = apellido;
+        cliente.razonSocial = razonSocial;
+        cliente.cuit = cuit;
+        cliente.fechaNacimiento = fechaNacimiento;
+        cliente.telefonoCelular = telefonoCelular;
+        cliente.email = email;
+        return cliente;
     }
 
+    public static Cliente reconstituir(Long id, String nombre, String apellido, String razonSocial,
+                                       Cuit cuit, LocalDate fechaNacimiento,
+                                       Telefono telefonoCelular, Email email,
+                                       OffsetDateTime fechaCreacion, OffsetDateTime fechaModificacion) {
+        Cliente cliente = new Cliente();
+        cliente.id = id;
+        cliente.nombre = nombre;
+        cliente.apellido = apellido;
+        cliente.razonSocial = razonSocial;
+        cliente.cuit = cuit;
+        cliente.fechaNacimiento = fechaNacimiento;
+        cliente.telefonoCelular = telefonoCelular;
+        cliente.email = email;
+        cliente.fechaCreacion = fechaCreacion;
+        cliente.fechaModificacion = fechaModificacion;
+        return cliente;
+    }
+
+    public void actualizarNombre(String nombre) {
+        validarNoBlank(nombre, "nombre");
+        this.nombre = nombre;
+    }
+
+    public void actualizarApellido(String apellido) {
+        validarNoBlank(apellido, "apellido");
+        this.apellido = apellido;
+    }
+
+    public void actualizarTelefono(Telefono telefonoCelular) {
+        if (telefonoCelular == null) {
+            throw new IllegalArgumentException("El teléfono no puede ser nulo");
+        }
+        this.telefonoCelular = telefonoCelular;
+    }
+
+    public void actualizarEmail(Email email) {
+        if (email == null) {
+            throw new IllegalArgumentException("El email no puede ser nulo");
+        }
+        this.email = email;
+    }
+
+    private static void validarNoBlank(String value, String campo) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("El campo " + campo + " no puede estar vacío");
+        }
+    }
+
+    // Getters (sin setters publicos)
+
     public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
     public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
-
     public String getApellido() { return apellido; }
-    public void setApellido(String apellido) { this.apellido = apellido; }
-
     public String getRazonSocial() { return razonSocial; }
-    public void setRazonSocial(String razonSocial) { this.razonSocial = razonSocial; }
-
-    public String getCuit() { return cuit; }
-    public void setCuit(String cuit) { this.cuit = cuit; }
-
+    public Cuit getCuit() { return cuit; }
     public LocalDate getFechaNacimiento() { return fechaNacimiento; }
-    public void setFechaNacimiento(LocalDate fechaNacimiento) { this.fechaNacimiento = fechaNacimiento; }
-
-    public String getTelefonoCelular() { return telefonoCelular; }
-    public void setTelefonoCelular(String telefonoCelular) { this.telefonoCelular = telefonoCelular; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-
+    public Telefono getTelefonoCelular() { return telefonoCelular; }
+    public Email getEmail() { return email; }
     public OffsetDateTime getFechaCreacion() { return fechaCreacion; }
-    public void setFechaCreacion(OffsetDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
-
     public OffsetDateTime getFechaModificacion() { return fechaModificacion; }
-    public void setFechaModificacion(OffsetDateTime fechaModificacion) { this.fechaModificacion = fechaModificacion; }
 }

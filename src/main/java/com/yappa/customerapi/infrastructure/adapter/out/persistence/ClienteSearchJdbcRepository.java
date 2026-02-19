@@ -6,6 +6,9 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 import com.yappa.customerapi.domain.model.Cliente;
+import com.yappa.customerapi.domain.model.Cuit;
+import com.yappa.customerapi.domain.model.Email;
+import com.yappa.customerapi.domain.model.Telefono;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -26,15 +29,15 @@ public class ClienteSearchJdbcRepository {
     private static class ClienteRowMapper implements RowMapper<Cliente> {
         @Override
         public Cliente mapRow(ResultSet rs, int rowNum) throws SQLException {
-            return new Cliente(
+            return Cliente.reconstituir(
                     rs.getLong("id"),
                     rs.getString("nombre"),
                     rs.getString("apellido"),
                     rs.getString("razon_social"),
-                    rs.getString("cuit"),
+                    new Cuit(rs.getString("cuit")),
                     rs.getDate("fecha_nacimiento").toLocalDate(),
-                    rs.getString("telefono_celular"),
-                    rs.getString("email"),
+                    new Telefono(rs.getString("telefono_celular")),
+                    new Email(rs.getString("email")),
                     rs.getObject("fecha_creacion", OffsetDateTime.class),
                     rs.getObject("fecha_modificacion", OffsetDateTime.class)
             );
