@@ -1,6 +1,6 @@
 CREATE OR REPLACE FUNCTION search_clientes_by_nombre(p_q TEXT)
 RETURNS TABLE (
-  id INT,
+  id BIGINT,
   nombre VARCHAR,
   apellido VARCHAR,
   razon_social VARCHAR,
@@ -8,8 +8,8 @@ RETURNS TABLE (
   fecha_nacimiento DATE,
   telefono_celular VARCHAR,
   email VARCHAR,
-  fecha_creacion TIMESTAMP,
-  fecha_modificacion TIMESTAMP
+  fecha_creacion TIMESTAMPTZ,
+  fecha_modificacion TIMESTAMPTZ
 )
 AS $$
 BEGIN
