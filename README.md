@@ -1,6 +1,6 @@
 # Customer API
 
-API REST de gestión de clientes desarrollada con **Spring Boot 4.0.2** y **Java 21**, estructurada con **arquitectura hexagonal (Ports & Adapters)**.
+API REST de gestión de clientes desarrollada con **Spring Boot 3.5.8** y **Java 21**, estructurada con **arquitectura hexagonal (Ports & Adapters)**.
 
 ## Arquitectura Hexagonal
 
@@ -10,14 +10,25 @@ El proyecto separa la lógica de negocio de los detalles de infraestructura medi
 com.yappa.customerapi/
 │
 ├── domain/                          # Núcleo de negocio (sin dependencias de framework)
-│   ├── model/Cliente.java           # Modelo de dominio (POJO puro)
-│   ├── exception/                   # Excepciones de dominio
+│   ├── model/
+│   │   ├── Cliente.java             # Aggregate root (factory methods: crear/reconstituir)
+│   │   ├── Cuit.java                # Value Object (record) — formato XX-XXXXXXXX-X
+│   │   ├── Email.java               # Value Object (record) — validación formato y longitud
+│   │   └── Telefono.java            # Value Object (record) — validación longitud
+│   ├── exception/
+│   │   └── ClienteNotFoundException.java
 │   └── port/
-│       ├── in/ClienteService.java   # Puerto de entrada (casos de uso)
-│       └── out/ClienteRepository.java  # Puerto de salida (persistencia)
+│       ├── in/                      # Puertos de entrada (Use Cases)
+│       │   ├── CrearClienteUseCase.java
+│       │   ├── ObtenerClienteUseCase.java
+│       │   ├── BuscarClienteUseCase.java
+│       │   ├── ActualizarClienteUseCase.java
+│       │   └── EliminarClienteUseCase.java
+│       └── out/
+│           └── ClienteRepository.java  # Puerto de salida (persistencia)
 │
 ├── application/                     # Implementación de casos de uso
-│   └── service/ClienteServiceImpl.java
+│   └── service/ClienteServiceImpl.java  # Implementa los 5 Use Cases
 │
 └── infrastructure/                  # Adaptadores (detalles técnicos)
     ├── adapter/
@@ -35,22 +46,50 @@ com.yappa.customerapi/
     └── config/                      # Configuración (OpenAPI, etc.)
 ```
 
+### Value Objects
+
+El dominio utiliza **Java Records** como Value Objects para encapsular validaciones y garantizar inmutabilidad:
+
+| Value Object | Validación |
+|---|---|
+| `Cuit` | Formato argentino `XX-XXXXXXXX-X` (regex) |
+| `Email` | No vacío, máximo 150 caracteres, formato con `@` y dominio |
+| `Telefono` | No vacío, máximo 30 caracteres |
+
+Estos Value Objects se validan automáticamente en el constructor (compact constructor del record), lanzando `IllegalArgumentException` si los datos son inválidos.
+
+### Use Cases
+
+Los puertos de entrada están definidos como interfaces individuales siguiendo el **Interface Segregation Principle (ISP)**:
+
+| Use Case | Método | Descripción |
+|---|---|---|
+| `CrearClienteUseCase` | `create(Cliente)` | Crear un nuevo cliente |
+| `ObtenerClienteUseCase` | `getAll()`, `getById(Long)` | Obtener uno o todos los clientes |
+| `BuscarClienteUseCase` | `searchByNombre(String)` | Búsqueda por nombre (función PostgreSQL) |
+| `ActualizarClienteUseCase` | `update(Long, Cliente)` | Actualización parcial de cliente |
+| `EliminarClienteUseCase` | `delete(Long)` | Eliminar cliente por ID |
+
+El controller inyecta cada Use Case por su interfaz específica, sin depender de la implementación concreta.
+
 ### Principios aplicados
 
-- **Domain** no tiene dependencias de Spring, JPA ni Lombok. Es un POJO puro con interfaces (ports) que definen contratos.
+- **Domain** no tiene dependencias de Spring, JPA ni Lombok. Usa POJOs puros, Records (Value Objects) e interfaces (ports) que definen contratos.
 - **Application** implementa la lógica de negocio usando solo los ports definidos en el dominio.
 - **Infrastructure** contiene los adaptadores que conectan el mundo exterior con el dominio:
   - **Adapter IN (REST)**: recibe requests HTTP, convierte DTOs a modelos de dominio y delega al puerto de entrada.
   - **Adapter OUT (Persistence)**: implementa el puerto de salida usando JPA y JDBC, convirtiendo entre entidades JPA y modelos de dominio.
+- **Modelo de dominio rico**: `Cliente` usa factory methods (`crear` / `reconstituir`) y métodos de actualización que validan invariantes. No expone setters públicos.
 
 ## Stack tecnológico
 
 - Java 21
-- Spring Boot 4.0.2
+- Spring Boot 3.5.8
 - Spring Data JPA + PostgreSQL
 - Flyway (migraciones de base de datos)
 - Lombok (entidades JPA)
-- Springdoc OpenAPI (documentación Swagger)
+- MapStruct (declarado en build)
+- Springdoc OpenAPI 2.8.15 (documentación Swagger)
 - Testcontainers (tests de integración)
 
 ## Requisitos previos
@@ -110,7 +149,26 @@ Swagger UI disponible en: `http://localhost:3000/docs`
 
 ## Tests
 
-Los tests de integración usan Testcontainers con PostgreSQL. Requieren Docker:
+El proyecto cuenta con tests unitarios y de integración organizados por capa:
+
+### Tests unitarios
+
+| Capa | Tests |
+|------|-------|
+| Domain (Value Objects) | `CuitTest`, `EmailTest`, `TelefonoTest` |
+| Domain (Modelo) | `ClienteTest`, `ClienteNotFoundExceptionTest` |
+| Application (Service) | `ClienteServiceImplTest` |
+| Infrastructure (REST) | `ClienteControllerTest`, `ClienteRestMapperTest`, `GlobalExceptionHandlerTest` |
+| Infrastructure (Persistence) | `ClientePersistenceAdapterTest`, `ClientePersistenceMapperTest` |
+| Infrastructure (Config) | `OpenApiConfigTest` |
+
+### Test de integración
+
+`ClientesApiIT` — test end-to-end con `@SpringBootTest` + Testcontainers (PostgreSQL 16). Ejecuta el ciclo completo: crear, obtener, buscar, actualizar y eliminar.
+
+### Ejecutar tests
+
+Requieren Docker para Testcontainers:
 
 ```bash
 ./mvnw test
